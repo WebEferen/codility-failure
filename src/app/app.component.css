@@ -1,0 +1,25 @@
+.wrapper {
+  width: 500px;
+}
+
+.control input {
+  padding: 10px 20px;
+  width: 300px;
+}
+
+.list {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-item {
+  margin-bottom: 1px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid lightgray;
+}
+
+.list-item:hover {
+  background: lightgray;
+}
