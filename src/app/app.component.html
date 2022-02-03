@@ -2,6 +2,7 @@
   <div class="control" [ngClass]="{ 'is-loading': isLoading }">
     <input type="text" [value]="value" (input)="handleSearch($event)">
   </div>
+  <p>Loading: {{ isLoading }}</p>
   <div class="list is-hoverable">
     <div *ngFor="let item of items$ | async" class="list-item" (click)="handleSubmit(item)">{{ item }}</div>
   </div>

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, interval, of } from 'rxjs';
-import { switchMap, debounce } from 'rxjs/operators';
+import { switchMap, debounce, tap } from 'rxjs/operators';
 
 // Mocks inside the file without querying (simplicity).
 const MOCK_URL = 'http://localhost:4200/assets/mocks.json';
@@ -24,11 +24,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
       this.items$ = this.subject$.pipe(
+        tap(() => this.isLoading = true),
         debounce(() => interval(500)),
         switchMap((text: string) => {
           if (text === '') return of([]);
           return this.httpClient.get<string[]>(`${MOCK_URL}?q=${text}`);
-        })
+        }),
+        tap(() => this.isLoading = false)
       );
   }
 
