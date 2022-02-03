@@ -3,7 +3,7 @@
     <input type="text" [value]="value" (input)="handleSearch($event)">
   </div>
   <div class="list is-hoverable">
-    <div *ngFor="let item of items" class="list-item" (click)="handleSubmit(item)">{{ item }}</div>
+    <div *ngFor="let item of items$ | async" class="list-item" (click)="handleSubmit(item)">{{ item }}</div>
   </div>
 </div>
 

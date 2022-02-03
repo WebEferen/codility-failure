@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
-import { debounceTime, tap } from 'rxjs/operators';
+import { Observable, Subject, interval, of } from 'rxjs';
+import { switchMap, debounce } from 'rxjs/operators';
 
 // Mocks inside the file without querying (simplicity).
 const MOCK_URL = 'http://localhost:4200/assets/mocks.json';
@@ -11,19 +11,29 @@ const MOCK_URL = 'http://localhost:4200/assets/mocks.json';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnDestroy {
-  private subscription: Subscription = new Subscription();
+export class AppComponent implements OnInit, OnDestroy {
+  private subject$: Subject<any> = new Subject();
+  items$: Observable<string[]> = new Observable();
 
   isLoading: boolean = false;
-  items: string[] = [];
 
   @Output() onSubmit = new EventEmitter<string>();
   @Input() value: string = '';
 
   constructor(private httpClient: HttpClient) {}
 
+  ngOnInit(): void {
+      this.items$ = this.subject$.pipe(
+        debounce(() => interval(500)),
+        switchMap((text: string) => {
+          if (text === '') return of([]);
+          return this.httpClient.get<string[]>(`${MOCK_URL}?q=${text}`);
+        })
+      );
+  }
+
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.subject$.unsubscribe();
   }
 
   handleSearch(event: any) {
@@ -31,21 +41,12 @@ export class AppComponent implements OnDestroy {
     event.preventDefault();
 
     const value: string = event.target.value;
-    if (value === '') {
-      this.items = [];
-      return;
-    }
-
-    this.subscription = this.httpClient.get<string[]>(`${MOCK_URL}?q=${value}`).pipe(
-      tap(() => this.isLoading = true),
-      debounceTime(500),
-      tap(() => this.isLoading = false),
-    ).subscribe((data) => this.items = data);
+    return this.subject$.next(value);
   }
 
   handleSubmit(id: string) {
     this.value = id;
-    this.items = [];
+    this.subject$.next('');
 
     this.onSubmit.emit(id);
   }
